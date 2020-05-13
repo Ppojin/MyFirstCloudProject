@@ -5,22 +5,25 @@ import com.example.myappapiusers.entity.UserEntity;
 import com.example.myappapiusers.entity.UserReadDto;
 import com.example.myappapiusers.repo.UserReposit;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service("UserService")
 public class UserServiceImpl implements UserService{
     @Autowired private UserReposit userReposit;
+    @Autowired private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
     public UserReadDto createUser(UserCreateDto userDetails) {
         //===============================================================//
-//         ModelMapper modelMapper = new ModelMapper();
-//         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-//         UserEntity userEntity = modelMapper.map(userDetails, UserEntity.class);
+        //ModelMapper modelMapper = new ModelMapper();
+        //modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        //UserEntity userEntity = modelMapper.map(userDetails, UserEntity.class);
         //---------------------------------------------------------------//
         UserEntity userEntity = userDetails.toEntity();
         //===============================================================//
-        userEntity.setEncryptedPassword("test encrypted password");
+        String cryptedPwd = bCryptPasswordEncoder.encode(userDetails.getPassword());
+        userEntity.setEncryptedPassword(cryptedPwd);
         userReposit.save(userEntity);
 
         return UserReadDto.builder()

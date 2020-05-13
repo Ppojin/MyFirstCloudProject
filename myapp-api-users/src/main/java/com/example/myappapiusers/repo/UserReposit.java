@@ -1,7 +1,8 @@
 package com.example.myappapiusers.repo;
 
 import com.example.myappapiusers.entity.UserEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 
-public interface UserReposit extends JpaRepository<UserEntity, Long> {
+public interface UserReposit extends CrudRepository<UserEntity, Long> {
+    UserEntity findByEmail(String email);
 }

@@ -14,7 +14,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Table(name = "users")
 public class UserEntity implements Serializable {
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     @Column(nullable = false, length = 50)
     private String firstName;

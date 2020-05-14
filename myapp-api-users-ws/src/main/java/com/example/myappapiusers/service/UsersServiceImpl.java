@@ -34,31 +34,19 @@ public class UsersServiceImpl implements UsersService {
         // UserDto -> UserEntity
         userDetails.setUserId(UUID.randomUUID().toString());
 
-        userDetails.setEncryptedPassword(bCryptPasswordEncoder.encode(userDetails.getPassword()));
+        userDetails.setEncryptedPassword(
+                bCryptPasswordEncoder.encode(userDetails.getPassword())
+        );
 
-        ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+        ModelMapper modelMapper =  new ModelMapper();
+        modelMapper.getConfiguration().setMatchingStrategy(
+                MatchingStrategies.STRICT);
         UserEntity userEntity = modelMapper.map(userDetails, UserEntity.class);
 
         repository.save(userEntity);
 
         UserDto returnValue = modelMapper.map(userEntity, UserDto.class);
         return returnValue;
-    }
-
-    @Override
-    public UserDto getUserDetailsByEmail(String email) {
-        UserEntity userEntity = repository.findByEmail(email);
-        if(userEntity == null) throw new UsernameNotFoundException(email);
-
-        //====================================================//
-        //ModelMapper modelMapper = new ModelMapper();
-        //modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        //UserDto userDto = modelMapper.map(userEntity, UserDto.class);
-        //return userDto
-        //----------------------------------------------------//
-        return new ModelMapper().map(userEntity, UserDto.class);
-        //====================================================//
     }
 
     @Override
@@ -72,5 +60,16 @@ public class UsersServiceImpl implements UsersService {
         return new User(userEntity.getEmail() , userEntity.getEncryptedPassword(),
                 true, true, true,
                 true, new ArrayList<>());
+    }
+
+    @Override
+    public UserDto getUserDetailsByEmail(String email) {
+        UserEntity userEntity = repository.findByEmail(email);
+
+        if (userEntity == null) {
+            throw new UsernameNotFoundException(email);
+        }
+        // UserEntity -> UserDto (using ModelMapper)
+        return new ModelMapper().map(userEntity, UserDto.class);
     }
 }

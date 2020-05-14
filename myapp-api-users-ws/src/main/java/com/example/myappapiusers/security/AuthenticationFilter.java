@@ -5,8 +5,9 @@ import com.example.myappapiusers.service.UsersService;
 import com.example.myappapiusers.shared.UserDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.core.env.Environment;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -21,19 +22,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-    @Autowired UsersService usersService;
-    @Autowired Environment env;
-//    UsersService usersService;
-//    Environment env;
-//    public AuthenticationFilter(UsersService usersService, Environment env) {
-//        this.usersService = usersService;
-//        this.env = env;
-//    }
+public class AuthenticationFilter
+        extends UsernamePasswordAuthenticationFilter {
 
+    private UsersService usersService;
+    private Environment env;
+
+    public AuthenticationFilter(UsersService usersService, Environment env, AuthenticationManager authenticationManager) {
+        this.usersService = usersService;
+        this.env = env;
+        super.setAuthenticationManager(authenticationManager);
+    }
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request,
+    public Authentication attemptAuthentication(
+            HttpServletRequest request,
             HttpServletResponse response) throws AuthenticationException {
         try {
             LoginRequestModel creds = new ObjectMapper().
@@ -56,14 +59,19 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain chain,
-            Authentication authResult
-    ) throws IOException, ServletException {
+            Authentication authResult) throws IOException, ServletException {
         String email = ((User)authResult.getPrincipal()).getUsername();
-        UserDto userDetails = usersService.getUserDetailsByEmail(email);
-        String token = Jwts.builder()
-                .compact();
-        response.addHeader("token", token);
-        response.addHeader("userId", userDetails.getUserId());
+        UserDto userDetail = usersService.getUserDetailsByEmail(email);
+
         // generate token with userId(email)
+        // token expire_date (configuration or application.yml)
+        String token = Jwts.builder()
+                .setSubject(userDetail.getUserId())
+                .setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(env.getProperty("token.expiration_time"))))
+                .signWith(SignatureAlgorithm.HS512, env.getProperty("token.secret"))
+                .compact();
+
+        response.addHeader("token", token);
+        response.addHeader("userId", userDetail.getUserId());
     }
 }

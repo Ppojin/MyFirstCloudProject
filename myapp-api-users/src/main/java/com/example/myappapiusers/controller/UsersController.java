@@ -29,7 +29,7 @@ public class UsersController {
             consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE},
             produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE}
     )
-    public ResponseEntity<UserReadDto> createUser(@Valid @RequestBody UserCreateDto userDto){
+    public ResponseEntity<UserReadDto> createUser(@RequestBody UserCreateDto userDto){
         UserReadDto userReadDto = userService.createUser(userDto);
 
         ResponseEntity<UserReadDto> body = ResponseEntity.status(HttpStatus.CREATED).body(userReadDto);

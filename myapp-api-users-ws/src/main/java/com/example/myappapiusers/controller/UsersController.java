@@ -27,29 +27,27 @@ public class UsersController {
 
     @GetMapping("/status/check")
     public String status() {
-        return String.format("Users-WS] Working on port %s",
-                env.getProperty("local.server.port"));
+        return String.format("[Users-WS] Working on port=%s, secret=%s",
+                env.getProperty("local.server.port"),
+                env.getProperty("token.secret")
+        );
     }
 
     @PostMapping(
-            consumes = {MediaType.APPLICATION_XML_VALUE,
-                    MediaType.APPLICATION_JSON_VALUE},
-            produces = {MediaType.APPLICATION_XML_VALUE,
-                    MediaType.APPLICATION_JSON_VALUE}
+            consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE},
+            produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE}
     )
     public ResponseEntity<CreateUserResponseModel> createUsers(
             @Valid @RequestBody
             CreateUserRequestModel userDetails) {
         // CreateUserRequestModel -> UserDto (using ModelMapper)
         ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration().setMatchingStrategy(
-                MatchingStrategies.STRICT);
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         UserDto userDto = modelMapper.map(userDetails, UserDto.class);
         UserDto createdDto = userService.createUser(userDto);
 
 //        return new ResponseEntity(HttpStatus.CREATED);
-        CreateUserResponseModel returnValue = modelMapper.map(createdDto,
-                CreateUserResponseModel.class);
+        CreateUserResponseModel returnValue = modelMapper.map(createdDto, CreateUserResponseModel.class);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);
     }
